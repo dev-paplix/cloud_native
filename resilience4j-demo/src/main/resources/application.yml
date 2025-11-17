@@ -1,0 +1,94 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: resilience4j-demo
+
+# Actuator Configuration for Health Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents,ratelimiters,retries,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+
+# Resilience4j Configuration
+resilience4j:
+  # Circuit Breaker Configuration
+  circuitbreaker:
+    instances:
+      backendService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+      paymentService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        permittedNumberOfCallsInHalfOpenState: 2
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 60
+        eventConsumerBufferSize: 10
+
+  # Retry Configuration
+  retry:
+    instances:
+      backendService:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.io.IOException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+      orderService:
+        maxAttempts: 5
+        waitDuration: 500ms
+        enableExponentialBackoff: false
+        retryExceptions:
+          - java.io.IOException
+
+  # Rate Limiter Configuration
+  ratelimiter:
+    instances:
+      default:
+        registerHealthIndicator: true
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0s
+        eventConsumerBufferSize: 100
+      apiService:
+        registerHealthIndicator: true
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0s
+      premiumService:
+        registerHealthIndicator: true
+        limitForPeriod: 100
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0s
+
+# Logging Configuration
+logging:
+  level:
+    io.github.resilience4j: DEBUG
+    com.example.resilience: DEBUG
