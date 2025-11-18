@@ -86,13 +86,13 @@ Open your browser and visit:
 **Example:**
 ```powershell
 # Success case
-curl http://localhost:8080/api/retry/demo
+iwr http://localhost:8080/api/retry/demo
 
 # Failure case (triggers retry)
-curl http://localhost:8080/api/retry/demo?fail=true
+iwr http://localhost:8080/api/retry/demo?fail=true
 
 # Unreliable service
-curl http://localhost:8080/api/retry/unreliable
+iwr http://localhost:8080/api/retry/unreliable
 ```
 
 ### Circuit Breaker Pattern Endpoints

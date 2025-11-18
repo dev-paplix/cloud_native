@@ -23,11 +23,11 @@ mvn spring-boot:run
 ```
 
 Verify:
-```bash
-curl localhost:8080/retry/success
-curl localhost:8080/cb/success
-curl localhost:8080/rl/test
-curl localhost:8080/actuator/health
+```
+GET http://localhost:8080/api/retry/demo
+GET http://localhost:8080/api/circuit-breaker/success
+GET http://localhost:8080/api/rate-limiter/demo
+GET http://localhost:8080/actuator/health
 ```
 
 ---
@@ -35,8 +35,8 @@ curl localhost:8080/actuator/health
 ## 3. Exercise 1 — Retry
 ### Tasks
 1. Trigger failure:
-```bash
-curl localhost:8080/retry/failure
+```
+GET http://localhost:8080/api/retry/demo?fail=true
 ```
 2. Observe retry attempts & fallback in logs.
 3. Modify retry config in `application.yml`:
@@ -58,16 +58,20 @@ enableRandomizedWait: true
 ## 4. Exercise 2 — Circuit Breaker
 ### Tasks
 1. Confirm success:
-```bash
-curl localhost:8080/cb/success
 ```
-2. Flood failures:
-```bash
-seq 1 40 | xargs -n1 -P10 curl -s localhost:8080/cb/failure
+GET http://localhost:8080/api/circuit-breaker/success
+```
+2. Flood failures (call this endpoint 10+ times rapidly):
+```
+GET http://localhost:8080/api/circuit-breaker/fail
+```
+Or use the trigger endpoint:
+```
+POST http://localhost:8080/api/circuit-breaker/trigger-open
 ```
 3. Observe OPEN state → fast fallback.
 4. Wait for timeout → HALF-OPEN.
-5. Call `/cb/success` to close breaker.
+5. Call `/api/circuit-breaker/success` to close breaker.
 
 ### Expected
 - Circuit opens after threshold.
@@ -78,12 +82,12 @@ seq 1 40 | xargs -n1 -P10 curl -s localhost:8080/cb/failure
 ## 5. Exercise 3 — Rate Limiter
 ### Tasks
 1. Test:
-```bash
-curl localhost:8080/rl/test
 ```
-2. Burst:
-```bash
-seq 1 50 | xargs -n1 -P20 curl -s localhost:8080/rl/test
+GET http://localhost:8080/api/rate-limiter/demo
+```
+2. Burst (use Postman Runner or call rapidly 20+ times):
+```
+GET http://localhost:8080/api/rate-limiter/demo
 ```
 3. Modify:
 ```yaml
@@ -101,9 +105,9 @@ limitRefreshPeriod: 1s
 ## 6. Exercise 4 — Health Probes
 ### Tasks
 1. Check:
-```bash
-curl localhost:8080/actuator/health/readiness
-curl localhost:8080/actuator/health/liveness
+```
+GET http://localhost:8080/actuator/health/readiness
+GET http://localhost:8080/actuator/health/liveness
 ```
 2. Enable if needed:
 ```yaml
@@ -131,14 +135,14 @@ management.health.probes.enabled: true
 ---
 
 ## 9. Quick Reference
-Burst test:
-```bash
-seq 1 50 | xargs -n1 -P20 curl -s localhost:8080/rl/test
+Burst test (use Postman Runner with 50 iterations):
+```
+GET http://localhost:8080/api/rate-limiter/demo
 ```
 
 Check readiness:
-```bash
-curl localhost:8080/actuator/health/readiness
+```
+GET http://localhost:8080/actuator/health/readiness
 ```
 
 ---
