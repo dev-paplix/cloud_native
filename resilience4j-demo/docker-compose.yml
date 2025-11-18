@@ -1,6 +1,6 @@
 # Docker Compose for Resilience4j Demo
 # For local development and testing
-
+version: '2.2'
 name: resilience4j-demo
 
 services:
