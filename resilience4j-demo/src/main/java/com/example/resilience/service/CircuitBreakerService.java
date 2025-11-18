@@ -36,7 +36,7 @@ public class CircuitBreakerService {
      * @param shouldFail - controls whether the operation should fail
      * @return ApiResponse with operation result
      */
-    @CircuitBreaker(name = "backendService", fallbackMethod = "circuitBreakerFallback")
+    @CircuitBreaker(name = "backendService", fallbackMethod = "handleFallback")
     public ApiResponse callExternalService(boolean shouldFail) {
         int callNumber = callCounter.incrementAndGet();
         logger.info("Circuit Breaker - Call #{} to external service at {}", callNumber, LocalDateTime.now());
@@ -120,7 +120,7 @@ public class CircuitBreakerService {
      * @param ex - the exception that triggered the fallback
      * @return ApiResponse with fallback message
      */
-    private ApiResponse circuitBreakerFallback(boolean shouldFail, Exception ex) {
+    private ApiResponse handleFallback(boolean shouldFail, Exception ex) {
         logger.warn("Circuit Breaker Fallback executed. Reason: {}", ex.getMessage());
         
         String message;
@@ -145,7 +145,7 @@ public class CircuitBreakerService {
      */
     private ApiResponse circuitBreakerFallback(long delayMs, Exception ex) {
         logger.warn("Circuit Breaker Fallback executed for slow service. Reason: {}", ex.getMessage());
-        
+
         String message;
         if (ex instanceof CallNotPermittedException) {
             message = "Circuit is OPEN - Service temporarily unavailable. Please try again later.";

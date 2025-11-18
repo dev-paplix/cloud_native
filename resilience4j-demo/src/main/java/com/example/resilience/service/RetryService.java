@@ -32,7 +32,7 @@ public class RetryService {
      * @param shouldFail - controls whether the operation should simulate failure
      * @return ApiResponse with operation result
      */
-    @Retry(name = "backendService", fallbackMethod = "retryFallback")
+    @Retry(name = "backendService", fallbackMethod = "performOperationFallback")
     public ApiResponse performOperationWithRetry(boolean shouldFail) {
         int attempt = attemptCounter.incrementAndGet();
         logger.info("Retry attempt #{} at {}", attempt, LocalDateTime.now());
@@ -59,7 +59,7 @@ public class RetryService {
      * 
      * @return ApiResponse with operation result
      */
-    @Retry(name = "orderService", fallbackMethod = "retryFallback")
+    @Retry(name = "orderService", fallbackMethod = "unreliableOperationFallback")
     public ApiResponse unreliableOperation() {
         int attempt = attemptCounter.incrementAndGet();
         logger.info("Unreliable operation attempt #{}", attempt);
@@ -83,16 +83,16 @@ public class RetryService {
     /**
      * Fallback method for performOperationWithRetry
      * Called when all retry attempts are exhausted
-     * 
+     *
      * @param shouldFail - original method parameter
      * @param ex - the exception that caused the failure
      * @return ApiResponse with fallback message
      */
-    private ApiResponse retryFallback(boolean shouldFail, Exception ex) {
+    private ApiResponse performOperationFallback(boolean shouldFail, Exception ex) {
         int attempts = attemptCounter.get();
         attemptCounter.set(0);
         logger.error("All retry attempts failed. Last attempt: #{}", attempts, ex);
-        
+
         return new ApiResponse(
             "Operation failed after " + attempts + " attempts. Fallback executed. Error: " + ex.getMessage(),
             "FALLBACK",
@@ -108,7 +108,7 @@ public class RetryService {
      * @param ex - the exception that caused the failure
      * @return ApiResponse with fallback message
      */
-    private ApiResponse retryFallback(Exception ex) {
+    private ApiResponse unreliableOperationFallback(Exception ex) {
         int attempts = attemptCounter.get();
         attemptCounter.set(0);
         logger.error("All retry attempts failed. Last attempt: #{}", attempts, ex);
