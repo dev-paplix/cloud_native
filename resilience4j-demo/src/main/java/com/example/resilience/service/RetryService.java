@@ -83,7 +83,7 @@ public class RetryService {
     /**
      * Fallback method for performOperationWithRetry
      * Called when all retry attempts are exhausted
-     * 
+     *
      * @param shouldFail - original method parameter
      * @param ex - the exception that caused the failure
      * @return ApiResponse with fallback message
@@ -92,7 +92,7 @@ public class RetryService {
         int attempts = attemptCounter.get();
         attemptCounter.set(0);
         logger.error("All retry attempts failed. Last attempt: #{}", attempts, ex);
-        
+
         return new ApiResponse(
             "Operation failed after " + attempts + " attempts. Fallback executed. Error: " + ex.getMessage(),
             "FALLBACK",
