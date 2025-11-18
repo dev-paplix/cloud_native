@@ -1,9 +1,26 @@
 # Docker Compose for Resilience4j Demo
 # For local development and testing
 
-version: '3.8'
+name: resilience4j-demo
 
 services:
+  postgres:
+    image: postgres:latest
+    container_name: resilience4j-postgres
+    environment:
+      - POSTGRES_USER=demo_user
+      - POSTGRES_PASSWORD=demo_password
+      - POSTGRES_DB=resilience4j_db
+    ports:
+      - "5432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo_user"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
   resilience4j-app:
     build:
       context: .
