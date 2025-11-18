@@ -1,14 +1,16 @@
 package com.example.resilience.service;
 
-import com.example.resilience.model.ApiResponse;
-import io.github.resilience4j.retry.annotation.Retry;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.example.resilience.model.ApiResponse;
+
+import io.github.resilience4j.retry.annotation.Retry;
 
 /**
  * Service demonstrating Retry Pattern with Resilience4j
@@ -79,12 +81,14 @@ public class RetryService {
     }
 
     /**
-     * Fallback method called when all retry attempts are exhausted
+     * Fallback method for performOperationWithRetry
+     * Called when all retry attempts are exhausted
      * 
+     * @param shouldFail - original method parameter
      * @param ex - the exception that caused the failure
      * @return ApiResponse with fallback message
      */
-    private ApiResponse retryFallback(Exception ex) {
+    private ApiResponse retryFallback(boolean shouldFail, Exception ex) {
         int attempts = attemptCounter.get();
         attemptCounter.set(0);
         logger.error("All retry attempts failed. Last attempt: #{}", attempts, ex);
@@ -98,10 +102,23 @@ public class RetryService {
     }
 
     /**
-     * Overloaded fallback method for performOperationWithRetry
+     * Fallback method for unreliableOperation
+     * Called when all retry attempts are exhausted
+     * 
+     * @param ex - the exception that caused the failure
+     * @return ApiResponse with fallback message
      */
-    private ApiResponse retryFallback(boolean shouldFail, Exception ex) {
-        return retryFallback(ex);
+    private ApiResponse retryFallback(Exception ex) {
+        int attempts = attemptCounter.get();
+        attemptCounter.set(0);
+        logger.error("All retry attempts failed. Last attempt: #{}", attempts, ex);
+        
+        return new ApiResponse(
+            "Unreliable operation failed after " + attempts + " attempts. Fallback executed. Error: " + ex.getMessage(),
+            "FALLBACK",
+            attempts,
+            "RETRY"
+        );
     }
 
     /**

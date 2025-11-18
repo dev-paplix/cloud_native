@@ -27,22 +27,43 @@ This project teaches students the following resilience patterns:
 
 ## 🚀 Getting Started
 
-### 1. Build the Project
+### Option 1: Run with Maven (Traditional)
 
 ```powershell
 cd resilience4j-demo
 mvn clean install
+mvn spring-boot:run
 ```
 
-### 2. Run the Application
+### Option 2: Run with Docker (Recommended for Production)
 
 ```powershell
-mvn spring-boot:run
+cd resilience4j-demo
+
+# Build and test using PowerShell script
+.\build-docker.ps1
+
+# Or build manually
+docker build -t resilience4j-demo:latest .
+docker run -p 8080:8080 resilience4j-demo:latest
+
+# Or use Docker Compose
+docker-compose up -d
+```
+
+### Option 3: Deploy to Kubernetes
+
+```powershell
+# Apply Kubernetes manifests
+kubectl apply -f k8s/deployment.yaml
+
+# Port forward to access locally
+kubectl port-forward -n resilience4j-demo deployment/resilience4j-demo 8080:8080
 ```
 
 The application will start on `http://localhost:8080`
 
-### 3. Verify Installation
+### Verify Installation
 
 Open your browser and visit:
 - Application: http://localhost:8080/actuator/health
@@ -362,6 +383,16 @@ server:
   - Circuit breaker states and integration
   - Liveness vs Readiness health probes
   - Token bucket vs Leaky bucket rate limiting algorithms
+
+- **[DOCKER_CICD_GUIDE.md](DOCKER_CICD_GUIDE.md)** - Docker and CI/CD documentation:
+  - Docker build and deployment
+  - Docker Compose usage
+  - GitHub Actions CI/CD pipeline
+  - GitLab CI/CD pipeline
+  - Kubernetes deployment
+  - Monitoring and troubleshooting
+
+- **[QUICK_START.md](QUICK_START.md)** - Quick reference for students
 
 ### External Resources
 - [Resilience4j Documentation](https://resilience4j.readme.io/)

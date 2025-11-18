@@ -1,15 +1,17 @@
 package com.example.resilience.service;
 
-import com.example.resilience.model.ApiResponse;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.example.resilience.model.ApiResponse;
+
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 /**
  * Service demonstrating Circuit Breaker Pattern with Resilience4j
@@ -109,15 +111,16 @@ public class CircuitBreakerService {
     }
 
     /**
-     * Fallback method for circuit breaker
+     * Fallback method for callExternalService
      * This is called when:
      * 1. The circuit is OPEN (too many failures)
      * 2. The operation fails and we want to provide a graceful response
      * 
+     * @param shouldFail - original method parameter
      * @param ex - the exception that triggered the fallback
      * @return ApiResponse with fallback message
      */
-    private ApiResponse circuitBreakerFallback(Exception ex) {
+    private ApiResponse circuitBreakerFallback(boolean shouldFail, Exception ex) {
         logger.warn("Circuit Breaker Fallback executed. Reason: {}", ex.getMessage());
         
         String message;
@@ -135,17 +138,26 @@ public class CircuitBreakerService {
     }
 
     /**
-     * Overloaded fallback for callExternalService
-     */
-    private ApiResponse circuitBreakerFallback(boolean shouldFail, Exception ex) {
-        return circuitBreakerFallback(ex);
-    }
-
-    /**
-     * Overloaded fallback for slowExternalService
+     * Fallback for slowExternalService
+     * @param delayMs - original method parameter
+     * @param ex - the exception that triggered the fallback
+     * @return ApiResponse with fallback message
      */
     private ApiResponse circuitBreakerFallback(long delayMs, Exception ex) {
-        return circuitBreakerFallback(ex);
+        logger.warn("Circuit Breaker Fallback executed for slow service. Reason: {}", ex.getMessage());
+        
+        String message;
+        if (ex instanceof CallNotPermittedException) {
+            message = "Circuit is OPEN - Service temporarily unavailable. Please try again later.";
+        } else {
+            message = "Service call failed. Using fallback response. Error: " + ex.getMessage();
+        }
+
+        return new ApiResponse(
+            message,
+            "FALLBACK",
+            "CIRCUIT_BREAKER"
+        );
     }
 
     /**
