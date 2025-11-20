@@ -9,9 +9,9 @@ spring:
     azure:
       monitor:
         enabled: true
-        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
+        connection-string: InstrumentationKey=a109860e-b09b-493c-b0d3-dc9ce0d9d2c8;IngestionEndpoint=https://southeastasia-1.in.applicationinsights.azure.com/;LiveEndpoint=https://southeastasia.livediagnostics.monitor.azure.com/;ApplicationId=8ba91bc7-9d5a-4e4d-bfd8-adc45d301753
       eventhubs:
-        connection-string: ${EVENTHUB_CONNECTION_STRING:Endpoint=sb://YOUR_NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR_KEY}
+        connection-string: Endpoint=sb://eventhub-lab-1763603313.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=ozUSaPVohctDPOf+L1IT/R+TjIpnSGXa9+AEhJHVf44=
   
     sleuth:
       enabled: true
@@ -65,7 +65,7 @@ management:
     export:
       azuremonitor:
         enabled: true
-        instrumentation-key: ${APPLICATIONINSIGHTS_INSTRUMENTATION_KEY:}
+        instrumentation-key: a109860e-b09b-493c-b0d3-dc9ce0d9d2c8
       prometheus:
         enabled: true
   tracing:
