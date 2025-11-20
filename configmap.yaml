@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resilience4j-config
+data:
+  application.yml: |
+    # Additional Spring properties merged with existing app config
+    resilience4j:
+      ratelimiter:
+        instances:
+          demoLimiter:
+            limitRefreshPeriod: 1s
+            limitForPeriod: 5
+            timeoutDuration: 0
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      endpoint:
+        health:
+          show-details: when_authorized

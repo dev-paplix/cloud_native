@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: observability-config
+  namespace: observability-demo
+  labels:
+    app: resilience4j-demo
+data:
+  # Application configuration
+  application.yml: |
+    spring:
+      application:
+        name: resilience4j-demo
+      
+      cloud:
+        azure:
+          monitor:
+            enabled: true
+            # Connection string from secret
+      
+      sleuth:
+        enabled: true
+        sampler:
+          probability: 1.0
+        propagation:
+          type: w3c
+        baggage:
+          correlation-enabled: true
+          correlation-fields:
+            - userId
+            - sessionId
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      endpoint:
+        health:
+          show-details: always
+      metrics:
+        tags:
+          environment: kubernetes
+          cluster: ${CLUSTER_NAME:unknown}
+          namespace: ${POD_NAMESPACE:default}
+          pod: ${POD_NAME:unknown}
+        export:
+          azuremonitor:
+            enabled: true
+          prometheus:
+            enabled: true
+      tracing:
+        sampling:
+          probability: 1.0
+    
+    logging:
+      level:
+        root: INFO
+        com.example.resilience: DEBUG
+      pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss} [%X{traceId}/%X{spanId}] %-5level %logger{36} - %msg%n"
+  
+  # Logback configuration
+  logback-spring.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+      <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+          <customFields>
+            {
+              "application": "${SPRING_APPLICATION_NAME:-resilience4j-demo}",
+              "namespace": "${POD_NAMESPACE:-default}",
+              "pod": "${POD_NAME:-unknown}",
+              "node": "${NODE_NAME:-unknown}"
+            }
+          </customFields>
+          <includeMdcKeyName>traceId</includeMdcKeyName>
+          <includeMdcKeyName>spanId</includeMdcKeyName>
+          <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampPattern>
+        </encoder>
+      </appender>
+      
+      <root level="INFO">
+        <appender-ref ref="JSON"/>
+      </root>
+    </configuration>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: applicationinsights-config
+  namespace: observability-demo
+data:
+  applicationinsights.json: |
+    {
+      "role": {
+        "name": "resilience4j-demo",
+        "instance": "${POD_NAME}"
+      },
+      "instrumentation": {
+        "logging": {
+          "level": "INFO"
+        },
+        "micrometer": {
+          "enabled": true
+        },
+        "jdbc": {
+          "enabled": true
+        },
+        "redis": {
+          "enabled": true
+        }
+      },
+      "preview": {
+        "sampling": {
+          "percentage": 100
+        },
+        "liveMetrics": {
+          "enabled": true
+        },
+        "processors": [
+          {
+            "type": "attribute",
+            "actions": [
+              {
+                "key": "kubernetes.namespace",
+                "value": "${POD_NAMESPACE}",
+                "action": "insert"
+              },
+              {
+                "key": "kubernetes.pod",
+                "value": "${POD_NAME}",
+                "action": "insert"
+              },
+              {
+                "key": "kubernetes.node",
+                "value": "${NODE_NAME}",
+                "action": "insert"
+              }
+            ]
+          }
+        ]
+      }
+    }
