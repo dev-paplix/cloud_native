@@ -26,18 +26,17 @@ public class MetricsService {
     }
     
     public void recordBusinessEvent(String eventType, String... tags) {
-        meterRegistry.counter("business.events",
-            appendTags("type", eventType, tags)
-        ).increment();
+        String[] allTags = new String[tags.length + 2];
+        allTags[0] = "type";
+        allTags[1] = eventType;
+        System.arraycopy(tags, 0, allTags, 2, tags.length);
+        
+        meterRegistry.counter("business.events", allTags).increment();
     }
     
     public void recordGauge(String name, double value, String... tags) {
         meterRegistry.gauge(name, 
             io.micrometer.core.instrument.Tags.of(tags), 
             value);
-    }
-    
-    private String[] appendTags(String... tags) {
-        return tags;
     }
 }
