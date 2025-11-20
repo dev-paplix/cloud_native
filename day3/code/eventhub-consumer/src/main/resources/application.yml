@@ -18,25 +18,6 @@ spring:
         #     container-name: checkpoints
         #     account-name: ${STORAGE_ACCOUNT_NAME:}
         #     account-key: ${STORAGE_ACCOUNT_KEY:}
-  
-    sleuth:
-      enabled: true
-      sampler:
-        probability: 1.0
-      propagation:
-        type: w3c
-      baggage:
-        correlation-enabled: true
-        correlation-fields:
-          - userId
-          - orderId
-          - messageId
-        remote-fields:
-          - userId
-          - orderId
-          - messageId
-      messaging:
-        enabled: true
     
     stream:
       function:
@@ -90,7 +71,6 @@ logging:
     root: INFO
     com.example.eventhub: DEBUG
     com.azure.messaging: INFO
-    org.springframework.cloud.sleuth: DEBUG
   pattern:
-    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%X{traceId:-}/%X{spanId:-}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}/%X{spanId}] [%thread] %-5level %logger{36} - %msg%n"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%mdc{traceId}/%mdc{spanId}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%mdc{traceId}/%mdc{spanId}] [%thread] %-5level %logger{36} - %msg%n"
