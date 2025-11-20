@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static com.azure.spring.messaging.AzureHeaders.CHECKPOINTER;
+import static net.logstash.logback.argument.StructuredArguments.*;
 
 /**
  * Order Consumer Service
@@ -58,9 +59,12 @@ public class OrderConsumerService {
                 OrderEvent order = message.getPayload();
                 int count = processedCount.incrementAndGet();
                 
-                log.info("📥 Processing order #{}: {} (Customer: {}, Amount: ${})",
-                    count, order.getOrderId(), order.getCustomerId(), 
-                    String.format("%.2f", order.getTotalAmount()));
+                log.info("📥 Processing order #{}",
+                    count, 
+                    kv("orderId", order.getOrderId()),
+                    kv("customerId", order.getCustomerId()),
+                    kv("amount", order.getTotalAmount()),
+                    kv("quantity", order.getQuantity()));
                 
                 // Simulate processing time (remove in production)
                 Thread.sleep(50);
@@ -137,12 +141,12 @@ public class OrderConsumerService {
         if (checkpointer != null) {
             checkpointer.success()
                 .doOnSuccess(success -> 
-                    log.debug("✓ Checkpoint successful at message #{}", count))
+                    log.debug("✓ Checkpoint successful", kv("messageCount", count)))
                 .doOnError(error -> 
-                    log.error("✗ Checkpoint failed at message #{}", count, error))
+                    log.error("✗ Checkpoint failed", error, kv("messageCount", count)))
                 .subscribe();
         } else {
-            log.warn("⚠ No checkpointer available for message #{}", count);
+            log.warn("⚠ No checkpointer available", kv("messageCount", count));
         }
     }
     

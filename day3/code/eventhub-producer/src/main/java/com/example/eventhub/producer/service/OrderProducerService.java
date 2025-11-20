@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static net.logstash.logback.argument.StructuredArguments.*;
+
 /**
  * Order Producer Service
  * 
@@ -59,12 +61,15 @@ public class OrderProducerService {
             
             if (sent) {
                 sentCounter.increment();
-                log.info("✓ Sent order #{}: {} (Customer: {}, Amount: ${})", 
-                    count, order.getOrderId(), order.getCustomerId(),
-                    String.format("%.2f", order.getTotalAmount()));
+                log.info("✓ Sent order #{}", 
+                    count,
+                    kv("orderId", order.getOrderId()),
+                    kv("customerId", order.getCustomerId()),
+                    kv("amount", order.getTotalAmount()),
+                    kv("eventId", order.getEventId()));
             } else {
                 failedCounter.increment();
-                log.error("✗ Failed to send order: {}", order.getOrderId());
+                log.error("✗ Failed to send order", kv("orderId", order.getOrderId()));
             }
         } catch (Exception e) {
             failedCounter.increment();
@@ -77,7 +82,7 @@ public class OrderProducerService {
      * Send a batch of sample orders
      */
     public void sendBatch(int batchSize) {
-        log.info("📦 Sending batch of {} orders", batchSize);
+        log.info("📦 Sending batch", kv("batchSize", batchSize));
         long startTime = System.currentTimeMillis();
         
         for (int i = 0; i < batchSize; i++) {
@@ -87,8 +92,10 @@ public class OrderProducerService {
         
         long duration = System.currentTimeMillis() - startTime;
         double throughput = (batchSize * 1000.0) / duration;
-        log.info("✓ Batch complete: {} orders in {}ms ({} orders/sec)", 
-            batchSize, duration, String.format("%.2f", throughput));
+        log.info("✓ Batch complete",
+            kv("batchSize", batchSize),
+            kv("durationMs", duration),
+            kv("throughput", String.format("%.2f orders/sec", throughput)));
     }
     
     /**

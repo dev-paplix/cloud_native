@@ -7,8 +7,36 @@ spring:
   
   cloud:
     azure:
+      monitor:
+        enabled: true
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
       eventhubs:
-        connection-string: ${EVENTHUB_CONNECTION_STRING:Endpoint=sb://YOUR_NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR_KEY}
+        connection-string: "Endpoint=sb://eventhub-lab-1763603313.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=ozUSaPVohctDPOf+L1IT/R+TjIpnSGXa9+AEhJHVf44="
+        # Optional: Remove checkpoint storage if you don't have Azure Storage configured
+        # processor:
+        #   checkpoint-store:
+        #     container-name: checkpoints
+        #     account-name: ${STORAGE_ACCOUNT_NAME:}
+        #     account-key: ${STORAGE_ACCOUNT_KEY:}
+  
+    sleuth:
+      enabled: true
+      sampler:
+        probability: 1.0
+      propagation:
+        type: w3c
+      baggage:
+        correlation-enabled: true
+        correlation-fields:
+          - userId
+          - orderId
+          - messageId
+        remote-fields:
+          - userId
+          - orderId
+          - messageId
+      messaging:
+        enabled: true
     
     stream:
       function:
@@ -38,13 +66,23 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,appinsights,bindings
   endpoint:
     health:
       show-details: always
   metrics:
     tags:
       application: ${spring.application.name}
+      environment: ${SPRING_PROFILES_ACTIVE:development}
+    export:
+      azuremonitor:
+        enabled: true
+        instrumentation-key: ${APPLICATIONINSIGHTS_INSTRUMENTATION_KEY:}
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
 
 # Logging
 logging:
@@ -52,6 +90,7 @@ logging:
     root: INFO
     com.example.eventhub: DEBUG
     com.azure.messaging: INFO
+    org.springframework.cloud.sleuth: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%X{traceId:-}/%X{spanId:-}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}/%X{spanId}] [%thread] %-5level %logger{36} - %msg%n"

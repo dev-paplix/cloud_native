@@ -4,13 +4,45 @@ server:
 spring:
   application:
     name: resilience4j-demo
+  
+  cloud:
+    azure:
+      monitor:
+        enabled: true
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
+  
+  sleuth:
+    enabled: true
+    sampler:
+      probability: 1.0
+    propagation:
+      type: w3c
+    baggage:
+      correlation-enabled: true
+      correlation-fields:
+        - userId
+        - sessionId
+        - requestId
+      remote-fields:
+        - userId
+        - sessionId
+        - requestId
+    web:
+      enabled: true
+      skip-pattern: /actuator.*|/health.*
+    integration:
+      enabled: true
+    async:
+      enabled: true
+    http:
+      enabled: true
 
 # Actuator Configuration for Health Endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,circuitbreakers,circuitbreakerevents,ratelimiters,retries,prometheus
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents,ratelimiters,retries,prometheus,appinsights
   endpoint:
     health:
       show-details: always
@@ -27,6 +59,30 @@ management:
       enabled: true
     ratelimiters:
       enabled: true
+  
+  # Metrics configuration
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${SPRING_PROFILES_ACTIVE:development}
+      region: eastus
+    export:
+      azuremonitor:
+        enabled: true
+        instrumentation-key: ${APPLICATIONINSIGHTS_INSTRUMENTATION_KEY:}
+      prometheus:
+        enabled: true
+    enable:
+      jvm: true
+      process: true
+      system: true
+      tomcat: true
+      logback: true
+  
+  # Distributed tracing
+  tracing:
+    sampling:
+      probability: 1.0
 
 # Resilience4j Configuration
 resilience4j:
@@ -98,5 +154,10 @@ resilience4j:
 # Logging Configuration
 logging:
   level:
+    root: INFO
     io.github.resilience4j: DEBUG
     com.example.resilience: DEBUG
+    org.springframework.cloud.sleuth: DEBUG
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%X{traceId:-}/%X{spanId:-}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}/%X{spanId}] [%thread] %-5level %logger{36} - %msg%n"
