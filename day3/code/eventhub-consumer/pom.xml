@@ -20,31 +20,9 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud-azure.version>5.8.0</spring-cloud-azure.version>
+        <spring-cloud-azure.version>5.17.1</spring-cloud-azure.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Spring Cloud Dependencies -->
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Azure Spring Cloud Dependencies -->
-            <dependency>
-                <groupId>com.azure.spring</groupId>
-                <artifactId>spring-cloud-azure-dependencies</artifactId>
-                <version>${spring-cloud-azure.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <!-- Spring Boot Starter Web -->
@@ -63,18 +41,21 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream</artifactId>
+            <version>4.1.0</version>
         </dependency>
 
         <!-- Azure Event Hubs Spring Cloud Stream Binder -->
         <dependency>
             <groupId>com.azure.spring</groupId>
             <artifactId>spring-cloud-azure-stream-binder-eventhubs</artifactId>
+            <version>${spring-cloud-azure.version}</version>
         </dependency>
 
         <!-- Azure Identity for authentication -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
+            <version>1.11.0</version>
         </dependency>
 
         <!-- Micrometer for metrics -->
@@ -83,10 +64,11 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- Azure Spring Cloud Starter for Application Insights -->
+        <!-- Azure Application Insights for Spring Boot -->
         <dependency>
-            <groupId>com.azure.spring</groupId>
-            <artifactId>spring-cloud-azure-starter-monitor</artifactId>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>applicationinsights-spring-boot-starter</artifactId>
+            <version>2.6.4</version>
         </dependency>
 
         <!-- Micrometer Azure Registry -->
@@ -150,6 +132,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream-test-binder</artifactId>
+            <version>4.1.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

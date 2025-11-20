@@ -21,11 +21,11 @@
     </parent>
 
     <properties>
-        <java.version>23</java.version>
+        <java.version>17</java.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <spring-cloud-azure.version>5.17.1</spring-cloud-azure.version>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
