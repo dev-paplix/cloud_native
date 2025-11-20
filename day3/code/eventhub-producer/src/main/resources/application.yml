@@ -1,0 +1,51 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: eventhub-producer
+  
+  cloud:
+    azure:
+      eventhubs:
+        connection-string: ${EVENTHUB_CONNECTION_STRING:Endpoint=sb://YOUR_NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR_KEY}
+    
+    stream:
+      function:
+        definition: orderProducer
+      
+      bindings:
+        orderProducer-out-0:
+          destination: orders
+          content-type: application/json
+          producer:
+            partition-key-expression: headers['partitionKey']
+      
+      eventhubs:
+        bindings:
+          orderProducer-out-0:
+            producer:
+              sync: false  # Async sending for better throughput
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.eventhub: DEBUG
+    com.azure.messaging: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

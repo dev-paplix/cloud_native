@@ -1,0 +1,57 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: eventhub-consumer
+  
+  cloud:
+    azure:
+      eventhubs:
+        connection-string: ${EVENTHUB_CONNECTION_STRING:Endpoint=sb://YOUR_NAMESPACE.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YOUR_KEY}
+    
+    stream:
+      function:
+        definition: orderConsumer
+      
+      bindings:
+        orderConsumer-in-0:
+          destination: orders
+          group: order-processor-group
+          content-type: application/json
+          consumer:
+            max-attempts: 3
+            back-off-initial-interval: 1000
+            back-off-multiplier: 2.0
+            back-off-max-interval: 10000
+      
+      eventhubs:
+        bindings:
+          orderConsumer-in-0:
+            consumer:
+              checkpoint:
+                mode: MANUAL
+                count: 10  # Checkpoint every 10 messages
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.eventhub: DEBUG
+    com.azure.messaging: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
