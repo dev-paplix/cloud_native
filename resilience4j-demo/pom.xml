@@ -88,11 +88,11 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
-        <!-- Azure Spring Cloud Starter for Application Insights -->
+        <!-- Azure Application Insights for Spring Boot -->
         <dependency>
-            <groupId>com.azure.spring</groupId>
-            <artifactId>spring-cloud-azure-starter-monitor</artifactId>
-            <version>${spring-cloud-azure.version}</version>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>applicationinsights-spring-boot-starter</artifactId>
+            <version>2.6.4</version>
         </dependency>
 
         <!-- Micrometer Azure Registry -->
