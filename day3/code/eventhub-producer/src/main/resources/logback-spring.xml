@@ -10,7 +10,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%X{traceId:-}/%X{spanId:-}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n
+                %clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%mdc{traceId}/%mdc{spanId}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n
             </pattern>
             <charset>utf8</charset>
         </encoder>
@@ -102,7 +102,6 @@
             <appender-ref ref="CONSOLE"/>
         </root>
         <logger name="com.example.eventhub" level="DEBUG"/>
-        <logger name="org.springframework.cloud.sleuth" level="DEBUG"/>
         <logger name="com.azure.messaging" level="INFO"/>
     </springProfile>
     
@@ -113,6 +112,5 @@
             <appender-ref ref="ASYNC_FILE"/>
         </root>
         <logger name="com.example.eventhub" level="INFO"/>
-        <logger name="org.springframework.cloud.sleuth" level="INFO"/>
     </springProfile>
 </configuration>
