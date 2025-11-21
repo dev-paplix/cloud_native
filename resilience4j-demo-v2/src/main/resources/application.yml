@@ -1,55 +1,85 @@
 server:
   port: 8070
-
+  shutdown: graceful # Enable graceful shutdown for zero-downtime deployments
+  
 spring:
   application:
     name: resilience4j-demo
+    version: v2
+  
+  # Graceful Shutdown Configuration
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
-# Actuator Configuration for Health Endpoints
+# Actuator Configuration - Enhanced for Kubernetes & Production
 management:
   endpoints:
     web:
+      base-path: /actuator
       exposure:
-        include: health,info,metrics,circuitbreakers,circuitbreakerevents,ratelimiters,retries,prometheus
+        include: "*" # Expose all endpoints for comprehensive monitoring
+  
   endpoint:
     health:
       show-details: always
       probes:
-        enabled: true
+        enabled: true # Enable Kubernetes liveness/readiness probes
+      group:
+        liveness:
+          include: livenessState,ping
+        readiness:
+          include: readinessState,diskSpace
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  
   health:
     livenessState:
-      enabled: true
+      enabled: true # K8s liveness probe
     readinessState:
-      enabled: true
-    ping:
-      enabled: false
+      enabled: true # K8s readiness probe
     circuitbreakers:
       enabled: true
     ratelimiters:
       enabled: true
+    diskspace:
+      enabled: true
+      threshold: 10MB
   
-  # Metrics configuration
+  # Metrics Configuration - Enhanced for monitoring
   metrics:
     tags:
       application: ${spring.application.name}
-      environment: ${SPRING_PROFILES_ACTIVE:development}
-      region: southeastasia
+      version: v2
+      environment: ${ENVIRONMENT:production}
+      region: ${REGION:southeastasia}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true # Enable histograms for better percentile calculation
     export:
       prometheus:
         enabled: true
+        descriptions: true
+        step: 1m
     enable:
       jvm: true
       process: true
       system: true
       tomcat: true
       logback: true
+      http: true
   
-  # Distributed tracing
+  # Distributed tracing - Enhanced
   tracing:
     sampling:
-      probability: 1.0
+      probability: 1.0 # 100% sampling for demo; use 0.1 (10%) in production
+    baggage:
+      enabled: true
+      correlation:
+        enabled: true
 
-# Resilience4j Configuration
+# Resilience4j Configuration - Production-Ready with Istio Integration
 resilience4j:
   # Circuit Breaker Configuration
   circuitbreaker:
@@ -116,6 +146,26 @@ resilience4j:
         limitRefreshPeriod: 1s
         timeoutDuration: 0s
 
+  # Bulkhead Configuration (Concurrency Control)
+  bulkhead:
+    instances:
+      default:
+        maxConcurrentCalls: 25
+        maxWaitDuration: 0ms
+      backendService:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 100ms
+
+  # TimeLimiter Configuration (Timeout Control)
+  timelimiter:
+    instances:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      backendService:
+        timeoutDuration: 3s
+        cancelRunningFuture: true
+
 # Logging Configuration
 logging:
   level:
@@ -125,3 +175,20 @@ logging:
   pattern:
     console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%mdc{traceId}/%mdc{spanId}]){yellow} %clr(%-5level){cyan} %clr(%logger{36}){blue} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%mdc{traceId}/%mdc{spanId}] [%thread] %-5level %logger{36} - %msg%n"
+
+# Application Info for Actuator
+info:
+  app:
+    name: ${spring.application.name}
+    version: v2
+    description: Resilience4j Demo V2 - Production Ready with Istio Integration
+    features:
+      - Graceful Shutdown
+      - Health Probes (Liveness/Readiness)
+      - Circuit Breaker
+      - Retry Pattern
+      - Rate Limiting
+      - Bulkhead Pattern
+      - Time Limiter
+      - Prometheus Metrics
+      - Distributed Tracing

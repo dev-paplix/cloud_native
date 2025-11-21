@@ -75,6 +75,20 @@
             <version>${resilience4j.version}</version>
         </dependency>
 
+        <!-- Resilience4j Bulkhead -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-bulkhead</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <!-- Resilience4j Time Limiter -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-timelimiter</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
         <!-- Resilience4j Micrometer (for metrics) -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>

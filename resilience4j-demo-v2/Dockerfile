@@ -47,7 +47,7 @@ EXPOSE 8070
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8070/actuator/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8070/actuator/health/liveness || exit 1
 
 # JVM optimization flags for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport \

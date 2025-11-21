@@ -1,0 +1,58 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: resilience4j-demo-v2-hpa
+  labels:
+    app: resilience4j-demo
+    version: v2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: resilience4j-demo-v2
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70 # Scale when CPU > 70%
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80 # Scale when memory > 80%
+  # Custom metric scaling (requests per second)
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100" # Scale when RPS > 100 per pod
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300 # Wait 5 minutes before scaling down
+      policies:
+      - type: Percent
+        value: 50 # Scale down max 50% of pods at once
+        periodSeconds: 60
+      - type: Pods
+        value: 2 # Or max 2 pods at once
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0 # Scale up immediately
+      policies:
+      - type: Percent
+        value: 100 # Scale up max 100% (double) at once
+        periodSeconds: 15
+      - type: Pods
+        value: 4 # Or max 4 pods at once
+        periodSeconds: 15
+      selectPolicy: Max
